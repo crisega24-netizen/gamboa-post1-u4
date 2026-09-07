@@ -1,25 +1,27 @@
 package com.universidad.compras.ejecucion;
 
 import com.universidad.compras.modelo.Solicitud;
+import com.universidad.compras.notificacion.PublicadorEstado;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Deque;
 import java.util.ArrayDeque;
 
-/**
- * Invoker de Command: ejecuta operaciones, mantiene un historial completo
- * y consultable (no solo la última) y permite deshacer la última operación
- * ejecutada sin afectar a las anteriores.
- */
 public class EjecutorSolicitud {
 
     private final Solicitud solicitud;
     private final List<Operacion> historial = new ArrayList<>();
     private final Deque<Operacion> pilaDeshacer = new ArrayDeque<>();
+    private final PublicadorEstado publicadorEstado;
 
     public EjecutorSolicitud(Solicitud solicitud) {
+        this(solicitud, new PublicadorEstado());
+    }
+
+    public EjecutorSolicitud(Solicitud solicitud, PublicadorEstado publicadorEstado) {
         this.solicitud = solicitud;
+        this.publicadorEstado = publicadorEstado;
     }
 
     public void ejecutar(Operacion operacion) {
@@ -27,6 +29,7 @@ public class EjecutorSolicitud {
         historial.add(operacion);
         pilaDeshacer.push(operacion);
         solicitud.setEstado("EJECUTADA");
+        publicadorEstado.notificarCambioEstado(solicitud);
     }
 
     public void deshacerUltima() {
